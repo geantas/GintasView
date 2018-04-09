@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html >
+<link rel="shortcut icon" href="favicon.ico" type="image/png">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Gintas View v1.2</title>
+<link rel="stylesheet" type="text/css" href="style.css" media="all"/>
+<script type='text/javascript' src='jquery-1.7.1.js'></script>
+<script type='text/javascript' src='alljavascript.js'></script>
+<script type='text/javascript' src="vidcontrol.js"></script>
+<script type='text/javascript' scr="jquery-ui.js"></script>
+<script type='text/javascript' scr="jquery-1.10.2.js"></script>
+<!--<script src="//code.jquery.com/jquery-1.10.2.js"></script> -->
+<script type='text/javascript' src="jquery-ui.js"></script>
+<!--  <link rel="stylesheet" href="jquery-ui.css">  -->
+<link rel="stylesheet" href="jquery-ui.css" type="text/css" media="all" />
+<link rel="stylesheet" type="text/css" href="style.css" />
+<script type='text/javascript' src='jquery-1.7.1.js'></script>
+<script type='text/javascript' src='alljavascript.js'></script>
+<script type='text/javascript' src="vidcontrol.js"></script>
+<script type='text/javascript' scr="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+<script type='text/javascript' scr="http://code.jquery.com/jquery-1.10.2.js"></script>
+<!--<script src="//code.jquery.com/jquery-1.10.2.js"></script> -->
+<script type='text/javascript' src="jquery-ui.js"></script>
+<!--  <link rel="stylesheet" href="jquery-ui.css">  -->
+<!-- <script type='text/javascript' src="http://bseth99.github.io/jquery-ui-extensions/ui/jquery.ui.labeledslider.js"></script> -->
+<style type="text/css">
+@font-face {
+    font-family: "AUFont";
+    src: url(/fonts/AUPassata_Bold.ttf) format("truetype");
+}
+
+@font-face {
+    font-family: "AURegFont";
+    src: url(/fonts/AUPassata_Rg.ttf) format("truetype");
+}
+
+html, body, input, button, p, div, textarea, label, span { 
+    font-family: "AUFont";
+}
+
+
+
+
+.ui-slider-horizontal .ui-slider-handle { /* makes the slider handle smaller */
+	top: -0.5em;
+	margin-left: -0.2em;
+}
+.ui-slider .ui-slider-handle {
+	position: absolute;
+	z-index: 2;
+	width: 0.3em;
+	height: 1.5em;
+	cursor: default;
+	z-index: 101;
+}
+
+.ui-slider-tick-mark{
+display:inline-block;
+width:5px;
+background:black;
+height:24px;
+position:absolute;
+top:-4px;
+z-index: 100;
+}
+
+ </style>
+<script>
+ $(function() {
+$( "#slider2" ).slider();
+});
+</script>
+
+</head>
+
+<body bgcolor="#1A171B">
+
+<div id="container">
+	
+<div id="header">
+<div id="bbb">
+<div align="left" id="sslogo" style="width:600px;"><a href="newindex.php"><img style="width:30%;height:30%;" src="SkejSimlogo_name.png" alt="SkejSim"></a>
+<div style="float:right;"  ><a  style="color:#FFFFFF;font-size:24px;">Gintas View v1.2</a></div>
+
+</div>
+<div align="right" style="margin-top:-10px;"  ><a  style="color:#FFFFFF;font-size:14px;text-decoration:none;color:#FFFFFF;" href="tag.php" target="_blank">Tag times</a></div>
+</div>
+
+<div id="spacer"></div>
+    <div id="main"><?php if(!isset($_POST['selection'])) { ?><div align="center"> <span style="font-size:20px;">Please select a video file. </span></div><?php } ?>
+    <div id="leftcol_container" >
+    	<div class="leftcol">
+    	<div class="leftcol"><span style="font-size:16px;color:#FFFFFF;"><?php if(!isset($_POST['selection'])) { ?>Select a video here:</span><?php } ?>
+<?php echo "<div id='labas'><span id='videofile'>". $filedate . "</span></div>";?>
+<?php if(isset($_POST['selection'])) { ?>
+<span>Select another video:<?php } ?></span>
+        	 <form class="green"  action="" method="post"> <!-- from this form we will have a value in $_POST['selection'] -->
+
+<?php 
+$dir    = '/media/gintas'; //need to find a solution how to find cameras directories when they appear not in /media/gintas
+
+
+$files1 = glob("$dir/BC*", GLOB_ONLYDIR); //gets all directories which starts with "BC" names.
+
+
+//Puts all 4 cameras directories (BC*) to 4 variables.
+$cam_dir1 = $files1[0];
+$cam_dir2 = $files1[1];
+$cam_dir3 = $files1[2];
+$cam_dir4 = $files1[3];
+
+function get_media($base_dir, $extentions = array('mp4')) { // Gets all media files with mp4 extensions
+    if(!file_exists($base_dir)) return array();		    //from all folders and subfolders
+
+    $extensions = implode('|', $extentions);
+    $directory  = new RecursiveDirectoryIterator($base_dir);
+    $iterator   = new RecursiveIteratorIterator($directory);
+    $regex      = new RegexIterator($iterator, "/^.+\.$extensions$/i", RecursiveRegexIterator::GET_MATCH);
+
+    $ret        = array();
+    $i = 0;
+    foreach ($regex as $filename=>$object) {
+        $ret[$i]['filename'] = $filename;
+        $ret[$i]['filetime'] = filectime($filename);
+        $i++;
+    }
+    return $ret;
+}
+
+
+//outputs the list of files, sorted by date, named by modification date, to the "select" tag.
+$thelist = '<select size="1" name="selection">';
+foreach (get_media("$cam_dir1", array('mp4')) as $file)
+{
+    $thelist .= '<option value="'.$file['filename'].'">'.date("Y-m-d H:i",$file['filetime']).'</option>';
+}
+$thelist .= '</select>';
+echo $thelist;
+
+
+//Code for first camera stream end//
+
+?>
+
+<?php
+$filename = $_POST['selection']; //puts selected files name into variable filename.
+if(isset($_POST['selection']))  //if the file IS selected, then:
+{
+ if (file_exists($filename)) //check if file actually exists. If yes, then:
+ {
+   $filedate = date("Y-m-d H:i", filemtime($filename)); //take file modification date and put it in variable filedate.
+
+}
+}
+echo "<p>";
+
+?>
+
+<?php //Code for second camera stream
+   $filedatetimestamp = strtotime($filedate);
+//$filedatetimestamp = strtotime('2014-06-27 09:48');
+
+$files2 = glob("$cam_dir2/DCIM/100GOPRO/*.*4"); //gets all file names which end with "4" in second camera directory
+
+foreach ($files2 as $filename2)
+{
+
+$filedate2 = date("Y-m-d H:i", filemtime($filename2));
+
+$newfiledate1 = new DateTime($filedate); //takes $filedate time and makes it as a new time; puts in variable
+$newfiledate2 = new DateTime($filedate2); //takes $filedate2 time and makes it as a new time; puts in variable
+$interval1 = $newfiledate1->diff($newfiledate2); //calculates the time difference (interval) between two newly created variables
+$newInterval1 = $interval1->format('%i'); //outputs the value in numberic format (1,2,3, etc..)
+
+if ($newInterval1 < 6)
+{ //if the difference between two newly created times are less than 6, then
+
+$file2 = $filename2; //put filename2 to file2 variable
+} 
+}
+//Code for second camera stream end//
+?>
+
+
+<?php //Code for third camera stream
+
+$files3 = glob("$cam_dir3/DCIM/100GOPRO/*.*4"); //gets all file names which end with "4" in third camera directory
+
+foreach ($files3 as $filename3)
+{
+
+$filedate3 = date("Y-m-d H:i", filemtime($filename3));
+
+$newfiledate3 = new DateTime($filedate3); //takes $filedate3 time and makes it as a new time; puts in variable
+$interval2 = $newfiledate1->diff($newfiledate3); //calculates the time difference (interval) between two newly created variables
+$newInterval2 = $interval2->format('%i'); //outputs the value in numberic format (1,2,3, etc..)
+
+if ($newInterval2 < 6) 
+{
+$file3 = $filename3; //puts filename3 to file3 variable
+} 
+}
+//Code for third camera stream end//
+
+?>
+
+<p hidden>originally created by gintas pociunas, 2014</p>
+
+
+
+<?php //Code for fourht camera stream
+
+$files4 = glob("$cam_dir4/DCIM/100GOPRO/*.*4"); //gets all file names which end with "4" in fourth camera directory
+
+foreach ($files4 as $filename4)
+{
+
+$filedate4 = date("Y-m-d H:i", filemtime($filename4));
+
+$newfiledate4 = new DateTime($filedate4); //takes $filedate4 time and makes it as "time"; puts in variable
+$interval3 = $newfiledate1->diff($newfiledate4); //calculates the time difference (interval) between two newly created variables
+$newInterval3 = $interval3->format('%i'); //outputs the value in numberic format (1,2,3, etc..)
+
+if ($newInterval3 < 6) 
+{
+$file4 = $filename4; //puts filename4 to file4 variable
+}
+}
+//Code for fourth camera stream end//
+?>
+
+     <input type="submit" class="submitbutton" value="    Select   " onclick="getVidDuration()">
+<input type="hidden" name="vtime"/>
+</form>
+
+<?php //if(isset($_POST['selection'])) { ?>
+        <div id="cont1" class="rightcol">
+        </div>
+        
+        <div id="cont2" class="rightcol">
+        </div>
+        
+        <div id="cont3" class="rightcol">
+        </div>
+<?php// } ?>
+</div></div>
+        </div>   
+        <div id="maincol_container" >
+ 
+<?php //if(isset($_POST['selection'])) { // This will hide the video before submission ?>
+<table class="vid">
+<tr>
+<td colspan="2" style="width:10px;">
+<STYLE>
+video.videos {
+   /* background-image: url(submit.png);
+    background-repeat: no-repeat;*/
+    z-index:1;
+}
+</STYLE>
+
+
+<div class="maincol"> 
+<div id="vid1" >
+      <video id="Video1" class="videos" >
+
+      <source src="<?php echo $_POST['selection']; ?>" type="video/mp4"></source> 
+ <!-- <source src="/media/gintas/GOPR0005.MP4" type="video/mp4"></source> -->
+     Browser does not support HTML5. Video could not be loaded.
+
+</video><div id="div1">
+<img SRC="Number-1.png" ALIGN="absmiddle" id="image1" class="images" style="z-index: 0; position: relative;" /></div>
+</div>
+        </div>
+        <div class="maincol_bottom"></div>
+</td>
+  <td >
+<div class="maincol">    
+
+<div id="vid2" >
+      <video id="Video2" class="videos">
+<!--    <source src="<?php echo $file2; ?>" type="video/mp4"></source> -->
+  <source src="/media/gintas/GOPR0014.MP4" type="video/mp4"></source>
+     Browser does not support HTML5. Video could not be loaded.
+</video><div id="div1">
+<img SRC="Number-2.png" ALIGN="absmiddle" class="images" id="image2" style="z-index: 0; position: relative;" /></div>
+</div>
+
+        </div>
+        <div class="maincol_bottom"></div>
+
+</tr>
+<tr>
+<td colspan="3" style="text-align:center" id="center">
+<div class="maincol" id="cont4">  
+
+        </div>
+        <div class="maincol_bottom"></div>
+</td></tr>
+<tr>
+<td colspan="2" style="width:10px;">
+<div class="maincol">          
+
+<div id="vid3" >
+      <video id="Video3" class="videos">
+  <!--  <source src="<?php echo $file3; ?>" type="video/mp4"></source>   -->
+ <source src="/media/gintas/GOPR0017.MP4" type="video/mp4"></source> 
+     Browser does not support HTML5. Video could not be loaded.
+</video>
+<div id="div3">
+<img SRC="Number-3.png" ALIGN="absmiddle" id="image3" class="images" style="z-index: 0; position: relative;" /></div>
+</div>
+
+        </div>
+        <div class="maincol_bottom"></div>
+</td>
+  <td >
+<div class="maincol">    
+
+<div id="vid4">
+      <video id="Video4" class="videos">
+ <!--    <source src="<?php echo $file4; ?>" type="video/mp4"></source>  --> 
+<source src="/media/gintas/GOPR0198.MP4" type="video/mp4"></source>
+     Browser does not support HTML5. Video could not be loaded.
+</video> <div id="div4">
+<img SRC="Number-4.png" ALIGN="absmiddle" id="image4" class="images" style="z-index: 0; position: relative;" />
+</div></div>
+<?php //} ?>
+
+        </div>
+        <div class="maincol_bottom"></div>
+</td>		
+</tr>
+        <div class="maincol_bottom"></div>
+
+<a href="#" onclick="moveUp()">Move up</a><br><a href="#" onclick="moveDown()">Move down</a>
+</table>
+
+
+<script>
+
+var $divv = document.getElementById("div1").innerHTML;
+function moveDown(){
+
+document.getElementById("cont1").innerHTML =    $divv;
+  document.getElementById("div1").innerHTML = "";     
+}
+function moveUp(){
+  document.getElementById("div1").innerHTML =    document.getElementById("cont1").innerHTML;
+  document.getElementById("cont1").innerHTML = "";  
+}
+
+</script>
+
+
+<style type="text/css">/*
+input.submitbtn {
+    background-image: url(submit.png); 
+    background-color: transparent; 
+    background-repeat: no-repeat;  
+    background-size: 48px 48px; 
+    border: none;           
+    cursor: pointer;       
+    height: 48px;          
+    width: 48px;	   
+    vertical-align: middle; 
+    horizontal-align: middle; 
+    outline: none;           
+    font-size:22px;        
+    text-align:center;      
+    margin-top: 8px;
+} */
+
+input.playpausebtn {
+    background-image: url(play.png); /* 48px x 48px */
+    background-color: transparent; /* make the button transparent */
+    background-repeat: no-repeat;  /* make the background image appear only once */
+    background-size: 48px 48px; /* button image size */
+    border: none;           /* assuming we don't want any borders */
+    cursor: pointer;        /* make the cursor like hovering over an <a> element */
+    height: 48px;           /* height of button */
+    width: 48px;	    /* width of button */
+    /*vertical-align: middle; /* align the text vertically centered */
+    /*horizontal-align: middle; /* align the text horizontally centered */
+    outline: none;           /* no highlight marks after button click */
+
+}
+input.resetbtn {
+    background-image: url(reset.png); /* 48px x 48px */
+    background-color: transparent; /* make the button transparent */
+    background-repeat: no-repeat;  /* make the background image appear only once */
+    background-size: 48px 48px; /* button image size */
+    border: none;           /* assuming we don't want any borders */
+    cursor: pointer;        /* make the cursor like hovering over an <a> element */
+    height: 48px;           /* height of button */
+    width: 48px;	    /* width of button */
+    vertical-align: middle; /* align the text vertically centered */
+    horizontal-align: middle; /* align the text horizontally centered */
+    outline: none;           /* no highlight marks after button click */
+}
+button.audiobtn {
+    background-image: url(audio.png); /* 48px x 48px */
+    background-color: transparent; /* make the button transparent */
+    background-repeat: no-repeat;  /* make the background image appear only once */
+    /*background-size: 48px 48px; /* button image size */
+    border: none;           /* assuming we don't want any borders */
+    cursor: pointer;        /* make the cursor like hovering over an <a> element */
+    height: 48px;           /* height of button */
+    width: 48px;	    /* width of button */
+    vertical-align: middle; /* align the text vertically centered */
+    horizontal-align: middle; /* align the text horizontally centered */
+    outline: none;           /* no highlight marks after button click */
+    font-size:22px;         /* size of the text on button */
+    text-align:center;       /* text alignment on button */
+}
+
+#copyleft {
+height: 14px;
+width: 14px;
+pointer-events: none;
+}
+
+/*
+table.vid {
+	border-width: 0px;
+	border-spacing: 0px;
+	border-style: hidden;
+	border-collapse: collapse;
+}
+table.vid th {
+	border-width: 0px;
+	padding: 0px;
+	border-style: none;
+}
+table.vid td {
+	border-width: 0px;
+	padding: 0px;
+	border-style: none;
+} 
+*/
+
+table.vid {
+	border-width: 2px;
+	border-spacing: 2px;
+	border-style: double;
+	border-collapse: collapse;
+}
+table.vid th {
+	border-width: 2px;
+	padding: 2px;
+	border-style: double;
+}
+table.vid td {
+	border-width: 2px;
+	padding: 0px;
+	border-style: double;
+} 
+
+#floating {
+    position: fixed;
+   }
+
+.floating {
+    position: fixed;
+   }
+
+
+</style>
+
+
+        
+<div>
+<!-- here was the timetag output test place -->
+</div>
+        </div>
+
+     <div id="rightcol_container"> 
+    
+<table id="floating" class="vid">
+<tr><td><?php //if(isset($_POST['selection'])) { ?>
+   <button id="audio1" class="audiobtn" onclick="document.getElementById('Video1').muted=false; document.getElementById('Video2').muted=true; document.getElementById('Video3').muted=true; document.getElementById('Video4').muted=true">1</button>
+</td></tr>
+<tr><td>
+    <button id="audio2" class="audiobtn" onclick="document.getElementById('Video1').muted=true; document.getElementById('Video2').muted=false; document.getElementById('Video3').muted=true; document.getElementById('Video4').muted=true">2</button>
+</td></tr>
+<tr><td>
+    <button id="audio3" class="audiobtn" onclick="document.getElementById('Video1').muted=true; document.getElementById('Video2').muted=true; document.getElementById('Video3').muted=false; document.getElementById('Video4').muted=true">3</button>
+</td></tr>
+<tr><td>
+    <button id="audio4" class="audiobtn" onclick="document.getElementById('Video1').muted=true; document.getElementById('Video2').muted=true; document.getElementById('Video3').muted=true; document.getElementById('Video4').muted=false">4</button>
+<?php// } ?>
+</td></tr>
+
+        <div class="maincol_bottom"></div>
+
+
+</table>
+
+
+        </div>
+        <div class="clear"></div>
+<table width="100%" class="vid">
+<tr><td style="width:10px;" ></td>
+<td style="width:30%;padding-top:5px;padding-right:1px;text-align:right;">
+<?php //if(isset($_POST['selection'])) { ?>
+                <label for="amount2">Time: </label>
+<td style="padding-top:5px;padding-left:1px;text-align:left;">
+                <input type="text" id="amount2" style="border: 0 none;border-radius: 4px 4px 4px 4px;color: #F6931F;padding-left: 9px;width: 60px;height:20px;font-size:18px;"> <?php echo "Playing video: " . $filedate; // } ?>
+</td></td></tr>
+<tr><td style="width:10px;padding-top:12px;" >
+<div style="background-color:transparent;" class="maincol" id="playbuttoncol">
+<?php //if(isset($_POST['selection'])) { ?>
+<div><input id="playpausebutton" onClick="playpause();" type="button" class="playpausebtn"></div>
+</div>
+<td colspan="2" style="text-align:top;" id="timeline">
+<div style="background-color:transparent;" class="maincol" id="timelinecol">  
+            <div id="slider2" style="width:100%;z-index:99;" class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"></div>
+        </div>
+        <div class="maincol_bottom"></div>
+</tr></td>
+<tr><td>
+<div style="background-color:transparent;" class="maincol">
+<input id="resetbutton" value="" onClick="resetclock();" type="button" class="resetbtn" >
+</div> <?php //} ?>
+</td></tr>
+        <div class="maincol_bottom"></div>
+</table>
+ 
+<div id="footer">
+</div>
+<div id="testcontainer" style="clear:both;">
+<br>
+
+<!-- <button hidden onclick="getVidDuration()"  type="button">Show the time</button> // Shows the duration of video. For testing purposes 
+<!-- <div hidden id="time"></div> -->
+
+<script type="text/javascript">
+myVid=document.getElementById("Video1");
+setTimeout(
+function()
+{
+test=myVid.duration;
+},300);
+
+
+function getVidDuration() //this gets the video length. Used for test purposes
+  { 
+setTimeout(function(){document.getElementById('time').innerHTML=test.toFixed(1)+" seconds";},380);
+}
+
+
+
+var flagclock = 0;
+var flagstop = 0;
+var stoptime = 0;
+var video1 = document.getElementById("Video1");
+var video2 = document.getElementById("Video2");
+var video3 = document.getElementById("Video3");
+var video4 = document.getElementById("Video4");
+var slider = $("#slider2");
+function playpause()
+{
+var playpause = document.getElementById('playpausebutton');
+var startdate = new Date();
+var starttime = startdate.getTime();
+if(flagclock==0)
+{
+video1.play() & video2.play() & video3.play() & video4.play();
+//playpause.value = 'Pause';
+$("#playpausebutton").css('background', 'url(pause.png) no-repeat top right');
+$("#playpausebutton").css('background-size', '48px 48px');
+flagclock = 1;
+counter(starttime);
+// output.value = ''; // Needed only to clear the output field. Usefull when there are unnecessary tags left in it.
+}
+else
+{
+video1.pause() & video2.pause() & video3.pause() & video4.pause();
+//playpause.value = 'Play';
+$("#playpausebutton").css('background', 'url(play.png) no-repeat top right');
+$("#playpausebutton").css('background-size', '48px 48px');
+flagclock = 0;
+flagstop = 1;
+}
+}
+function counter(starttime)
+{
+//output = document.getElementById('timeValue2');
+clock = document.getElementById('amount2');
+
+currenttime = new Date();
+var timediff = currenttime.getTime() - starttime;
+
+if(flagstop == 1)
+{
+
+timediff = timediff + stoptime;
+
+}
+if(flagclock == 1)
+{
+clock.value = formattime(timediff,'');
+refresh = setTimeout('counter(' + starttime + ');',10);
+formattime2();
+
+}
+else
+{
+window.clearTimeout(refresh);
+stoptime = timediff;
+console.log(stoptime);
+}
+}
+function formattime(rawtime,roundtype)
+{
+if(roundtype == 'round')
+{
+var ds = Math.round(rawtime/100) + '';
+}
+else
+{
+var ds = Math.floor(rawtime/100) + '';
+}
+var sec = Math.floor(rawtime/1000);
+var min = Math.floor(rawtime/60000);
+ds = ds.charAt(ds.length - 1);
+if(min >= 60)
+{
+playpause();
+}
+sec = sec - 60 * min + '';
+if(sec.charAt(sec.length - 2) != '')
+{
+sec = sec.charAt(sec.length - 2) + sec.charAt(sec.length - 1);
+}
+else
+{
+sec = 0 + sec.charAt(sec.length - 1);
+}
+min = min + '';
+if(min.charAt(min.length - 2) != '')
+{
+min = min.charAt(min.length - 2)+min.charAt(min.length - 1);
+}
+else
+{
+min = 0 + min.charAt(min.length - 1);
+}
+return min + ':' + sec;
+}
+function formattime2(){
+
+var hms = clock.value;   // your input string
+var a = hms.split(':'); // split it at the colons
+
+// minutes are worth 60 seconds. Hours are worth 60 minutes.
+var seconds1 = (+a[0] * 60 + +a[1]); 
+
+slider.slider('option', 'value', seconds1);
+}
+
+function resetclock()
+{
+video1.pause() & video2.pause() & video3.pause() & video4.pause();
+video1.currentTime = 0 ;
+video2.currentTime = 0 ;
+video3.currentTime = 0 ;
+video4.currentTime = 0 ;
+slider.slider("option", "value", 0);
+flagstop = 0;
+stoptime = 0;
+splitdate = '';
+window.clearTimeout(refresh);
+//output.value = '';
+splitcounter = 0;
+//playpause.value = 'Play';
+if(flagclock == 1)
+{
+//playpause.value = 'Play';
+flagclock = 0;
+flagstop = 1;
+
+clock.value = "00:00";
+sessionStorage.clear();
+localStorage.clear();
+}
+else
+{
+//playpause.value = 'Play';
+clock.value = "00:00";
+}
+}
+function splittime()
+{
+if(flagclock == 1)
+{
+if(splitdate != '')
+{
+var splitold = splitdate.split(':');
+var splitnow = clock.value.split(':');
+var numbers = new Array();
+var i = 0
+for(i;i<splitold.length;i++)
+{
+numbers[i] = new Array();
+numbers[i][0] = splitold[i]*1;
+numbers[i][1] = splitnow[i]*1;
+}
+if(numbers[1][1] < numbers[1][0])
+{
+numbers[1][1] += 60;
+numbers[0][1] -= 1;
+}
+var mzeros = (numbers[0][1] - numbers[0][0]) < 10?'0':'';
+var szeros = (numbers[1][1] - numbers[1][0]) < 10?'0':'';
+}
+splitdate = clock.value;
+
+
+
+output.value += clock.value + " \n";
+
+}
+}
+/*
+    function vidplay() {
+       var video1 = document.getElementById("Video1");
+       var video2 = document.getElementById("Video2");
+       var video3 = document.getElementById("Video3");
+       var video4 = document.getElementById("Video4");
+       if (video1.paused) {
+          video1.play() & video2.play() & video3.play() & video4.play();
+      } else {
+          video1.pause() & video2.pause() & video3.pause() & video4.pause();
+       }
+    }
+
+
+function forcevidplay() {
+       var video1 = document.getElementById("Video1");
+       var video2 = document.getElementById("Video2");
+       var video3 = document.getElementById("Video3");
+       var video4 = document.getElementById("Video4");
+       var button = document.getElementById("play");
+          video1.play() & video2.play() & video3.play() & video4.play();
+          //button.textContent = "Pause";
+   }*/
+
+
+$(document).ready(function() {
+  $('#audio1').hover(function() {
+    $('#Video1').css('opacity', '0.3');
+  }, function() {
+    // on mouseout, reset the background colour
+    $('#Video1').css('opacity', '');
+  });
+
+$('#audio2').hover(function() {
+    $('#Video2').css('opacity', '0.3');
+  }, function() {
+    // on mouseout, reset the background colour
+    $('#Video2').css('opacity', '');
+  });
+
+$('#audio3').hover(function() {
+    $('#Video3').css('opacity', '0.3');
+  }, function() {
+    // on mouseout, reset the background colour
+    $('#Video3').css('opacity', '');
+  });
+
+$('#audio4').hover(function() {
+    $('#Video4').css('opacity', '0.3');
+  }, function() {
+    // on mouseout, reset the background colour
+    $('#Video4').css('opacity', '');
+  });
+});
+
+
+
+</script>
+
+<?php //if(isset($_POST['selection'])) {
+$mysqli = new mysqli('localhost','gopro','gopro','timetagging'); // Establish database connection
+//$query = "SELECT timetag FROM timetags WHERE date='$filedate' ORDER BY id ASC"; // Query to check the last session number
+$query = "SELECT timetag FROM timetags WHERE timestamp BETWEEN $filedatetimestamp-250 AND $filedatetimestamp+250";
+$n = 1;
+if ($result = mysqli_query($mysqli, $query)) { // If there is no error
+
+$row_cnt = $result->num_rows;
+//echo "<br>Rows: " . $row_cnt;
+
+while ($row = $result->fetch_row()) { 
+foreach ($row as $rowvalue){
+$timetag[$n] = $rowvalue; ?>
+
+<script type="text/javascript">
+
+<?php echo "var time" . $n . " = " . $timetag[$n] . ";";
+echo "var n = " . $n . ";";?>
+
+</script>
+<?php
+
+
+$n++;
+}
+
+		}?>
+<?php
+} else {
+    echo "<br>Could not load the timetags:<br> (" . $mysqli->errno . ") " . $mysqli->error; // Output error on screen
+   
+}
+//}
+?>
+
+
+
+
+
+<?php /*
+$timestamp1 = strtotime('2014-06-26 18:11');
+$timestamp2 = strtotime('2014-06-26 18:22');
+$timestamp3 = strtotime('2014-06-26 18:23');
+$timestamp4 = strtotime('2014-06-26 18:24');
+$timestamp5 = strtotime('2014-06-26 18:25');
+
+if(isset($_POST['selection'])) 
+{
+  echo '===== TEST CONTAINER =====';
+echo "<br>sss";
+}
+
+if(!isset($_POST['selection'])) 
+{ 
+  echo '===== TEST CONTAINER =====';
+}
+echo '<br>ss';
+echo "<br>==========<br>";
+
+if(isset($_POST['vtime']))
+{
+$duration1 = $_POST["vtime"];
+echo "<br>duration: " . $duration1;
+}
+echo "<br>This is the time: " . $filedate;
+echo "<br>timestamp1 (18:11): " . $timestamp1;
+echo "<br>timestamp2 (18:22): " . $timestamp2;
+echo "<br>timestamp3 (18:23): " . $timestamp3;
+echo "<br>timestamp4 (18:24): " . $timestamp4;
+echo "<br>timestamp5 (18:25): " . $timestamp5;
+
+
+function timeset($timestamp){
+  $date = new DateTime();
+  $date -> setTimestamp($timestamp);
+  $currdate = timeset(date);
+}
+echo "<br>Currdate: " . $currdate;*/
+
+?> 
+<br>
+</div>
+<div>
+   
+</div>
+<script type="text/javascript">
+
+
+
+
+window.onload= $(function() {
+myVid=document.getElementById("Video1");
+setTimeout(function(){themax = myVid.duration;},300);
+setTimeout(function(){$("#slider2").slider("option", "max", themax.toFixed(0))},330);
+
+        $( "#slider2" ).slider({
+            step: 1,
+    	    animate: true,
+	    min: 0,
+	    range: "min",
+            slide: function( event, ui ) {
+		stoptime = ui.value * 1000;
+		window.clearTimeout(refresh);
+		console.log(stoptime);
+//flagclock = 0;
+//flagstop = 0;
+//stoptime = 0;
+if(flagclock==0)
+{	
+playpause();
+video1.play() & video2.play() & video3.play() & video4.play();
+//playpause.value = 'Pause';
+flagstop = 1;
+}else{
+video1.pause() & video2.pause() & video3.pause() & video4.pause();
+//playpause.value = 'Play';
+playpause();
+flagclock = 0;
+}
+        video1.currentTime = ui.value;
+        video2.currentTime = ui.value;
+        video3.currentTime = ui.value;
+        video4.currentTime = ui.value;
+
+	var timeInSecs = ui.value;
+	var date4 = new Date(null);
+	date4.setSeconds(timeInSecs);
+	var showtime = date4.getMinutes() + ':' +  date4.getSeconds();
+	$( "#amount2" ).val(showtime);
+            }
+        });
+        $( "#amount2" ).val($( "#slider2" ).slider( "value" ) );
+
+setTimeout(function(){
+
+  	var $slider =  $("#slider2");
+	var maxx =  $slider.slider("option", "max");
+	var spacing =  $slider.width() / (maxx);
+	<?php echo "var rowcnt = " . $row_cnt . ";";?>
+	//alert(spacing);
+	for (i=1; i <= rowcnt; i++)
+{
+	var tag = eval('tag = --time'+i) * spacing; // Creating a tag. Dangerous function!!
+
+	var labelInSecs = eval('++time'+i); // Creating a label. Dangerous function!!
+	var date3 = new Date(null);
+	date3.setSeconds(labelInSecs);
+	var label = date3.getMinutes() + ':' +  date3.getSeconds();
+
+        $("<span class='ui-slider-tick-mark'><br><span style='font-size:12px;text-align:left;'>"+label+"</span></span>").css('left', tag + 'px').appendTo($slider); // Puts the tag and label on the timeline
+}},340);
+
+    });
+
+</script>
+         <div id="footer"><h3>created by gintas pociunas, 2014. <span><img id="copyleft" src="copyleft.png" alt="cl logo"></span> (copyleft) OpenSource</h3></div>
+         <div id="footer" style="font-family:Calibri, Helvetica, sans-serif;"><a style="text-decoration:none;color:#1A171B;" href="mailto:geantas@gmail.com" target="_top">geantas@gmail.com</a></div>
+  </div>
+</div>
+</body>
+</html>
+

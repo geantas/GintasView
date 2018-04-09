@@ -1,0 +1,21 @@
+#!/bin/bash
+
+
+
+function Mysql_commands
+{
+echo "========================================";
+echo "If you will be asked for password, enter MySQL root's password.";
+echo "========================================";
+sleep 1;
+
+./myscomm timetagging gopro gopro;
+
+MYCMD='USE timetagging; CREATE TABLE IF NOT EXISTS timetags (`id` INT NOT NULL AUTO_INCREMENT, `date` VARCHAR(45) NULL, `timestamp` VARCHAR(45) NULL, `timetag` VARCHAR(45) NULL, `session` VARCHAR(45) NULL, PRIMARY KEY (`id`));';
+mysql -u root -pprojektas66 -e "$MYCMD";
+echo "========================================";
+echo "Success!";
+}
+
+Mysql_commands;
+
